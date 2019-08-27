@@ -1,43 +1,31 @@
 #!/usr/bin/env python3
 
+import pandas as pd
 import json
 import sys
 
-if (len(sys.argv) < 2):
-  print("Usage: wowza-convery.py (filenames)") 
-  quit()
-else:
-  print("Loading from file ", sys.argv[1])
-
-
-from openpyxl import load_workbook
+map = {}
 
 def convert(fn):
-  print("Attempting to convert file: ", fn)
-  wb = load_workbook(filename = sys.argv[1])
-  ws = wb.active
+  df = pd.read_excel(fn)
 
-  # K column contains the USB Device ID
+  #print(df[['USB Device ID', 'Full License Key']])
 
-  # L column contains the Full License Key
-  device_id = ws['K2':'K30']
+  for index, row in df.iterrows():
+    #  print(row['USB Device ID'], row['Full License Key'])
+    map[row['USB Device ID']] = row['Full License Key']
 
-  license_key = ws['L2':'L30']
+def save_json():
 
-  map = {}
-
-  for i, device in enumerate(device_id):
-    if (device[0].value != None):
-      map[device[0].value] = license_key[i][0].value
-
-  return map
-
-def save_json(my_map):
-
-  with open('wowza.json', 'w') as outfile:
-    json.dump(my_map, outfile)
+  with open('wowza.json', 'w+') as outfile:
+    json.dump(map, outfile)
     print("File converted to json")
 
 for arg in sys.argv[1:]:
-  save_json(convert(arg))
+  convert(arg)
+
+save_json()
+
+
+
 
